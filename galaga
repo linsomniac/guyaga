@@ -42,7 +42,7 @@ font = pygame.font.Font(None, 36)
 # Load sounds
 try:
     explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
-except pygame.error:
+except (pygame.error, FileNotFoundError):
     explosion_sound = None  # Sound file not found, set to None
 
 running = True
