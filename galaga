@@ -84,9 +84,15 @@ while running:
     # Get pressed keys
     keys_pressed = pygame.key.get_pressed()
 
-    # Update player
+    # Process player input
     if player_alive:
-        player.update(keys_pressed)
+        player.process_input(keys_pressed)
+    else:
+        # Stop player's movement when dead
+        player.velocity.x = 0
+
+    # Update all sprites
+    all_sprites.update()
 
     # Update enemies' positions
     enemy_group.update()

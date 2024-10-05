@@ -13,11 +13,26 @@ class Player(pygame.sprite.Sprite):
         self.speed = 5
         self.lives = 3
 
-    def update(self, keys_pressed):
+    def __init__(self):
+        super().__init__()
+        # Load player image
+        self.image = pygame.image.load('assets/player_ship.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (50, 40))
+        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, 580))
+        self.speed = 5
+        self.lives = 3
+        self.velocity = pygame.math.Vector2(0, 0)  # For smooth movement
+
+    def process_input(self, keys_pressed):
+        self.velocity.x = 0  # Reset horizontal velocity
         if keys_pressed[pygame.K_LEFT] or keys_pressed[pygame.K_a]:
-            self.rect.x -= self.speed
+            self.velocity.x = -self.speed
         if keys_pressed[pygame.K_RIGHT] or keys_pressed[pygame.K_d]:
-            self.rect.x += self.speed
+            self.velocity.x = self.speed
+
+    def update(self):
+        # Move the player based on velocity
+        self.rect.x += self.velocity.x
 
         # Keep the player within screen bounds
         if self.rect.left < 0:
