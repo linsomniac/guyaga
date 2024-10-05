@@ -67,7 +67,7 @@ except (pygame.error, FileNotFoundError):
 
 running = True
 while running:
-    clock.tick(60)  # 60 FPS
+    clock.tick(48)  # 48 FPS
 
     # Event Handling
     for event in pygame.event.get():

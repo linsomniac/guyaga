@@ -19,7 +19,7 @@ class Enemy(pygame.sprite.Sprite):
         # Change direction at screen edges and move down
         if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
             self.speed *= -1
-            self.rect.y += 20  # Move down when changing direction
+            self.rect.y += 16  # Move down when changing direction
 
     def shoot(self):
         # Randomly decide to shoot
