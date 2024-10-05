@@ -91,6 +91,13 @@ while running:
         # Stop player's movement when dead
         player.velocity.x = 0
 
+    # Enemies shoot bullets only if player is alive
+    if player_alive:
+        for enemy in enemy_group:
+            bullet = enemy.shoot()
+            if bullet:
+                all_sprites.add(bullet)
+                enemy_bullets.add(bullet)
 
     # Update all sprites (includes explosions)
     all_sprites.update()
