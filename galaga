@@ -7,8 +7,8 @@ from bullet import Bullet, EnemyBullet
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Galaga Clone')
 clock = pygame.time.Clock()
@@ -26,10 +26,10 @@ player_group.add(player)
 
 # Function to create a fleet of enemies
 def create_enemies():
-    enemy_speed = 2
+    enemy_speed = 1.6
     for row in range(3):
         for col in range(8):
-            enemy = Enemy(80 + col * 80, 50 + row * 60, enemy_speed)
+            enemy = Enemy(80 + col * 60, 100 + row * 80, enemy_speed)
             all_sprites.add(enemy)
             enemy_group.add(enemy)
 
@@ -156,7 +156,7 @@ while running:
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     lives_text = font.render(f"Lives: {player.lives}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
-    screen.blit(lives_text, (SCREEN_WIDTH - 150, 10))
+    screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
 
     pygame.display.flip()
 

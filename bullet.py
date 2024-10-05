@@ -9,7 +9,7 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load('assets/player_bullet.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (5, 15))
         self.rect = self.image.get_rect(center=(x, y))
-        self.speed = -10
+        self.speed = -8
         try:
             self.sound = pygame.mixer.Sound('assets/shoot.wav')
         except (pygame.error, FileNotFoundError):
@@ -31,7 +31,7 @@ class EnemyBullet(pygame.sprite.Sprite):
         self.image = pygame.image.load('assets/enemy_bullet.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (5, 15))
         self.rect = self.image.get_rect(center=(x, y))
-        self.speed = 5
+        self.speed = 4
 
     def update(self):
         self.rect.y += self.speed
