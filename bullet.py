@@ -10,8 +10,14 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (5, 15))
         self.rect = self.image.get_rect(center=(x, y))
         self.speed = -10
-        self.sound = pygame.mixer.Sound('assets/shoot.wav')
-        self.sound.play()
+        try:
+            self.sound = pygame.mixer.Sound('assets/shoot.wav')
+        except (pygame.error, FileNotFoundError):
+            self.sound = None  # Sound file not found, set to None
+
+        # Play sound if it exists
+        if self.sound:
+            self.sound.play()
 
     def update(self):
         self.rect.y += self.speed
