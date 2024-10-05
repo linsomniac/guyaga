@@ -84,8 +84,9 @@ while running:
     # Get pressed keys
     keys_pressed = pygame.key.get_pressed()
 
-    # Update
-    player.update(keys_pressed)
+    # Update player
+    if player_alive:
+        player.update(keys_pressed)
 
     # Update enemies' positions
     enemy_group.update()
