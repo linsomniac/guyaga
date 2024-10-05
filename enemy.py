@@ -1,0 +1,28 @@
+import pygame
+import random
+from bullet import EnemyBullet
+
+SCREEN_WIDTH = 800
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y, speed):
+        super().__init__()
+        # Load enemy image
+        self.image = pygame.image.load('assets/enemy_ship.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (40, 30))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.speed = speed
+
+    def update(self):
+        self.rect.x += self.speed
+
+        # Change direction at screen edges and move down
+        if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
+            self.speed *= -1
+            self.rect.y += 20  # Move down when changing direction
+
+        # Randomly decide to shoot
+        if random.randint(1, 200) == 1:
+            bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+            return bullet
+        return None
