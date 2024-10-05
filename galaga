@@ -26,10 +26,11 @@ player_group.add(player)
 
 # Function to create a fleet of enemies
 def create_enemies():
-    enemy_speed = 1.6
+    global enemy_group, all_sprites
+    enemy_speed = initial_enemy_speed * (1 + 0.2 * (wave_number - 1))
     for row in range(3):
         for col in range(8):
-            enemy = Enemy(80 + col * 60, 100 + row * 80, enemy_speed)
+            enemy = Enemy(80 + col * 60, 50 + row * 60, enemy_speed)
             all_sprites.add(enemy)
             enemy_group.add(enemy)
 
@@ -64,6 +65,36 @@ try:
     explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
 except (pygame.error, FileNotFoundError):
     explosion_sound = None  # Sound file not found, set to None
+
+game_started = False
+
+# Introduction Screen Loop
+intro = True
+while intro:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                intro = False  # Exit the intro loop and start the game
+
+    screen.fill((0, 0, 0))  # Clear screen with black
+
+    # Display the intro message
+    font = pygame.font.Font(None, 74)
+    title_text = font.render("Galaga Clone", True, (255, 255, 255))
+    screen.blit(title_text, (SCREEN_WIDTH/2 - title_text.get_width()/2, SCREEN_HEIGHT/2 - 100))
+
+    font = pygame.font.Font(None, 36)
+    prompt_text = font.render("Press SPACE to begin game", True, (255, 255, 255))
+    screen.blit(prompt_text, (SCREEN_WIDTH/2 - prompt_text.get_width()/2, SCREEN_HEIGHT/2))
+
+    pygame.display.flip()
+    clock.tick(60)
+
+wave_number = 1
+initial_enemy_speed = 1.6
 
 running = True
 while running:

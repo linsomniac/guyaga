@@ -1,6 +1,6 @@
 import pygame
 
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 800
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):

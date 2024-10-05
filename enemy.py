@@ -3,6 +3,7 @@ import random
 from bullet import EnemyBullet
 
 SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 800
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, speed):
