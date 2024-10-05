@@ -21,6 +21,7 @@ class Enemy(pygame.sprite.Sprite):
             self.speed *= -1
             self.rect.y += 20  # Move down when changing direction
 
+    def shoot(self):
         # Randomly decide to shoot
         if random.randint(1, 200) == 1:
             bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)

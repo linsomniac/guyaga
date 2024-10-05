@@ -39,6 +39,26 @@ create_enemies()
 score = 0
 font = pygame.font.Font(None, 36)
 
+# Initialize respawn variables
+respawn_delay = 3  # seconds
+respawn_timer = 0
+player_alive = True
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        # Load explosion image
+        self.image = pygame.image.load('assets/explosion.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (50, 50))  # Adjust size as needed
+        self.rect = self.image.get_rect(center=(x, y))
+        self.start_time = pygame.time.get_ticks()
+        self.duration = 500  # Explosion duration in milliseconds
+
+    def update(self):
+        # Remove explosion after duration
+        if pygame.time.get_ticks() - self.start_time > self.duration:
+            self.kill()
+
 # Load sounds
 try:
     explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
@@ -56,7 +76,7 @@ while running:
 
         # Player shooting
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and player_alive:
                 bullet = player.shoot()
                 all_sprites.add(bullet)
                 player_bullets.add(bullet)
@@ -67,12 +87,16 @@ while running:
     # Update
     player.update(keys_pressed)
 
-    # Update enemies and possibly add enemy bullets
-    for enemy in enemy_group:
-        bullet = enemy.update()
-        if bullet:
-            all_sprites.add(bullet)
-            enemy_bullets.add(bullet)
+    # Update enemies' positions
+    enemy_group.update()
+
+    # Enemies shoot bullets only if player is alive
+    if player_alive:
+        for enemy in enemy_group:
+            bullet = enemy.shoot()
+            if bullet:
+                all_sprites.add(bullet)
+                enemy_bullets.add(bullet)
 
     player_bullets.update()
     enemy_bullets.update()
@@ -85,19 +109,43 @@ while running:
         if explosion_sound:
             explosion_sound.play()
 
-    # Enemy bullets hit player
-    if pygame.sprite.spritecollide(player, enemy_bullets, True):
+    def player_died():
+        global player_alive, respawn_timer
         player.lives -= 1
+
+        # Create explosion at player's position
+        explosion = Explosion(player.rect.centerx, player.rect.centery)
+        all_sprites.add(explosion)
+        if explosion_sound:
+            explosion_sound.play()
+
+        # Remove player sprite
+        all_sprites.remove(player)
+        player_group.remove(player)
+        player_alive = False
+        respawn_timer = pygame.time.get_ticks()
+
         if player.lives <= 0:
             print("Game Over")
-            running = False
+            pygame.quit()
+            sys.exit()
+
+    # Enemy bullets hit player
+    if player_alive and pygame.sprite.spritecollide(player, enemy_bullets, True):
+        player_died()
 
     # Enemies collide with player
-    if pygame.sprite.spritecollide(player, enemy_group, True):
-        player.lives -= 1
-        if player.lives <= 0:
-            print("Game Over")
-            running = False
+    if player_alive and pygame.sprite.spritecollide(player, enemy_group, True):
+        player_died()
+
+    # Check if player should respawn
+    if not player_alive and (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000:
+        # Respawn player
+        player.rect.centerx = SCREEN_WIDTH / 2
+        player.rect.bottom = 580
+        all_sprites.add(player)
+        player_group.add(player)
+        player_alive = True
 
     # Rendering
     screen.fill((0, 0, 0))  # Clear screen with black
