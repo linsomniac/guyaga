@@ -1,5 +1,9 @@
 import pygame
 import sys
+import random
+from player import Player
+from enemy import Enemy
+from bullet import Bullet, EnemyBullet
 
 pygame.init()
 
@@ -8,51 +12,6 @@ SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Galaga Clone')
 clock = pygame.time.Clock()
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((50, 40))
-        self.image.fill((0, 255, 0))  # Green color
-        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 10))
-        self.speed = 5
-
-    def update(self, keys_pressed):
-        if keys_pressed[pygame.K_LEFT]:
-            self.rect.x -= self.speed
-        if keys_pressed[pygame.K_RIGHT]:
-            self.rect.x += self.speed
-        # Keep the player within screen bounds
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed):
-        super().__init__()
-        self.image = pygame.Surface((40, 30))
-        self.image.fill((255, 0, 0))  # Red color
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.speed = speed
-
-    def update(self):
-        self.rect.x += self.speed
-        # Change direction at screen edges and move down
-        if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
-            self.speed *= -1
-            self.rect.y += 20  # Move down when changing direction
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.Surface((5, 10))
-        self.image.fill((255, 255, 0))  # Yellow color
-        self.rect = self.image.get_rect(center=(x, y))
-        self.speed = -10
-
-    def update(self):
-        self.rect.y += self.speed
-        # Remove bullet if it goes off-screen
-        if self.rect.bottom < 0:
-            self.kill()
 # Sprite Groups
 all_sprites = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
