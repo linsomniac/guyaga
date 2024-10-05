@@ -101,6 +101,9 @@ while running:
     player_bullets.update()
     enemy_bullets.update()
 
+    # Update all sprites (includes explosions)
+    all_sprites.update()
+
     # Collision Detection
     # Player bullets hit enemies
     hits = pygame.sprite.groupcollide(player_bullets, enemy_group, True, True)
