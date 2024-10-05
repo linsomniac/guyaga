@@ -1,0 +1,169 @@
+import pygame
+import sys
+
+pygame.init()
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Galaga Clone')
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 40))
+        self.image.fill((0, 255, 0))  # Green color
+        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 10))
+        self.speed = 5
+
+    def update(self, keys_pressed):
+        if keys_pressed[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys_pressed[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+        # Keep the player within screen bounds
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((40, 30))
+        self.image.fill((255, 0, 0))  # Red color
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.speed = 2
+
+    def update(self):
+        self.rect.x += self.speed
+        # Change direction at screen edges and move down
+        if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
+            self.speed *= -1
+            self.rect.y += 20  # Move down when changing direction
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((5, 10))
+        self.image.fill((255, 255, 0))  # Yellow color
+        self.rect = self.image.get_rect(center=(x, y))
+        self.speed = -10
+
+    def update(self):
+        self.rect.y += self.speed
+        # Remove bullet if it goes off-screen
+        if self.rect.bottom < 0:
+            self.kill()
+all_sprites = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
+
+player = Player()
+all_sprites.add(player)
+player_group.add(player)
+
+# Function to create a fleet of enemies
+def create_enemies():
+    for row in range(3):  # Number of enemy rows
+        for col in range(8):  # Number of enemies per row
+            enemy = Enemy(80 + col * 80, 50 + row * 60)
+            all_sprites.add(enemy)
+            enemy_group.add(enemy)
+
+create_enemies()
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    clock.tick(60)  # Limit the frame rate to 60 FPS
+
+    # Event Handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                # Create a new bullet
+                bullet = Bullet(player.rect.centerx, player.rect.top)
+                all_sprites.add(bullet)
+                bullet_group.add(bullet)
+
+    # Get the current state of keyboard keys
+    keys_pressed = pygame.key.get_pressed()
+
+    # Update Sprites
+    player.update(keys_pressed)
+    enemy_group.update()
+    bullet_group.update()
+
+    # Collision Detection
+    hits = pygame.sprite.groupcollide(bullet_group, enemy_group, True, True)
+
+    # Rendering
+    screen.fill((0, 0, 0))  # Clear the screen with black
+    all_sprites.draw(screen)
+    pygame.display.flip()
+
+    # Check for Win Condition
+    if not enemy_group:
+        print("You Win!")
+        running = False
+score = 0
+lives = 3
+font = pygame.font.Font(None, 36)
+
+# After clearing the screen and before drawing sprites
+score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+lives_text = font.render(f"Lives: {lives}", True, (255, 255, 255))
+screen.blit(score_text, (10, 10))
+screen.blit(lives_text, (SCREEN_WIDTH - 100, 10))
+
+for hit in hits:
+    score += 100
+if pygame.sprite.spritecollide(player, enemy_group, True):
+    lives -= 1
+    if lives <= 0:
+        print("Game Over")
+        running = False
+import random
+
+class EnemyBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((5, 10))
+        self.image.fill((255, 0, 0))  # Red color
+        self.rect = self.image.get_rect(center=(x, y))
+        self.speed = 5
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.top > SCREEN_HEIGHT:
+            self.kill()
+
+enemy_bullets = pygame.sprite.Group()
+
+class Enemy(pygame.sprite.Sprite):
+    # Existing code...
+    def update(self):
+        # Existing movement code...
+
+        # Randomly decide to shoot
+        if random.randint(1, 100) == 1:
+            enemy_bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
+            all_sprites.add(enemy_bullet)
+            enemy_bullets.add(enemy_bullet)
+
+enemy_bullets.update()
+
+if pygame.sprite.spritecollide(player, enemy_bullets, True):
+    lives -= 1
+    if lives <= 0:
+        print("Game Over")
+        running = False
+self.image = pygame.image.load('player_ship.png').convert_alpha()
+self.image = pygame.transform.scale(self.image, (50, 40))
+
+shoot_sound = pygame.mixer.Sound('shoot.wav')
+explosion_sound = pygame.mixer.Sound('explosion.wav')
+
+shoot_sound.play()
+explosion_sound.play()
