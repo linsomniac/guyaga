@@ -40,7 +40,10 @@ score = 0
 font = pygame.font.Font(None, 36)
 
 # Load sounds
-explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
+try:
+    explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
+except pygame.error:
+    explosion_sound = None  # Sound file not found, set to None
 
 running = True
 while running:
@@ -79,7 +82,8 @@ while running:
     hits = pygame.sprite.groupcollide(player_bullets, enemy_group, True, True)
     for hit in hits:
         score += 100
-        explosion_sound.play()
+        if explosion_sound:
+            explosion_sound.play()
 
     # Enemy bullets hit player
     if pygame.sprite.spritecollide(player, enemy_bullets, True):
