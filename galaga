@@ -25,14 +25,6 @@ all_sprites.add(player)
 player_group.add(player)
 
 # Function to create a fleet of enemies
-def create_enemies():
-    global enemy_group, all_sprites
-    enemy_speed = initial_enemy_speed * (1 + 0.2 * (wave_number - 1))
-    for row in range(3):
-        for col in range(8):
-            enemy = Enemy(80 + col * 60, 50 + row * 60, enemy_speed)
-            all_sprites.add(enemy)
-            enemy_group.add(enemy)
 
 create_enemies()
 
