@@ -154,115 +154,121 @@ while running:
                 all_sprites.add(bullet)
                 enemy_bullets.add(bullet)
 
-    # Update all sprites (includes explosions)
-    all_sprites.update()
+    # Only update game elements if not in wave transition
+    if not next_wave:
+        all_sprites.update()
 
-    # Collision Detection
-    # Player bullets hit enemies
-    hits = pygame.sprite.groupcollide(player_bullets, enemy_group, True, True)
-    for hit in hits:
-        score += 100
-        if explosion_sound:
-            explosion_sound.play()
+        # Collision Detection
+        # Player bullets hit enemies
+        hits = pygame.sprite.groupcollide(player_bullets, enemy_group, True, True)
+        for hit in hits:
+            score += 100
+            if explosion_sound:
+                explosion_sound.play()
 
-        # Check and award extra lives for all thresholds passed
-        while score >= extra_life_threshold:
-            player.lives += 1  # Award an extra life
-            extra_life_threshold += 10000  # Set the next threshold
+            # Check and award extra lives for all thresholds passed
+            while score >= extra_life_threshold:
+                player.lives += 1  # Award an extra life
+                extra_life_threshold += 10000  # Set the next threshold
 
-    def player_died():
-        global player_alive, respawn_timer, game_over, game_over_start_time
-        player.lives -= 1
+        def player_died():
+            global player_alive, respawn_timer, game_over, game_over_start_time
+            player.lives -= 1
 
-        # Create explosion at player's position
-        explosion = Explosion(player.rect.centerx, player.rect.centery)
-        all_sprites.add(explosion)
-        if explosion_sound:
-            explosion_sound.play()
+            # Create explosion at player's position
+            explosion = Explosion(player.rect.centerx, player.rect.centery)
+            all_sprites.add(explosion)
+            if explosion_sound:
+                explosion_sound.play()
 
-        # Remove player sprite
-        all_sprites.remove(player)
-        player_group.remove(player)
-        player_alive = False
-        respawn_timer = pygame.time.get_ticks()
+            # Remove player sprite
+            all_sprites.remove(player)
+            player_group.remove(player)
+            player_alive = False
+            respawn_timer = pygame.time.get_ticks()
 
-        if player.lives <= 0:
-            # Set game over state
-            game_over = True
-            game_over_start_time = pygame.time.get_ticks()
+            if player.lives <= 0:
+                # Set game over state
+                game_over = True
+                game_over_start_time = pygame.time.get_ticks()
 
-    # Enemy bullets hit player
-    if player_alive and pygame.sprite.spritecollide(player, enemy_bullets, True):
-        player_died()
+        # Enemy bullets hit player
+        if player_alive and pygame.sprite.spritecollide(player, enemy_bullets, True):
+            player_died()
 
-    # Enemies collide with player
-    if player_alive and pygame.sprite.spritecollide(player, enemy_group, True):
-        player_died()
+        # Enemies collide with player
+        if player_alive and pygame.sprite.spritecollide(player, enemy_group, True):
+            player_died()
 
-    # Check if player should respawn
-    if not player_alive:
-        # Wait until bullets have cleared and respawn delay has passed
-        bullets_cleared = len(player_bullets) == 0 and len(enemy_bullets) == 0
-        respawn_time_passed = (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000
-        if bullets_cleared and respawn_time_passed:
-            # Respawn player
-            player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)
-            all_sprites.add(player)
-            player_group.add(player)
-            player_alive = True
+        # Check if player should respawn
+        if not player_alive:
+            # Wait until bullets have cleared and respawn delay has passed
+            bullets_cleared = len(player_bullets) == 0 and len(enemy_bullets) == 0
+            respawn_time_passed = (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000
+            if bullets_cleared and respawn_time_passed:
+                # Respawn player
+                player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)
+                all_sprites.add(player)
+                player_group.add(player)
+                player_alive = True
 
-    # Check for Game Over state
-    if game_over:
-        # Display 'Game Over' screen
+        # Check for Game Over state
+        if game_over:
+            # Display 'Game Over' screen
+            screen.fill((0, 0, 0))  # Clear screen with black
+            font = pygame.font.Font(None, 74)
+            game_over_text = font.render("Game Over", True, (255, 255, 255))
+            screen.blit(game_over_text, (SCREEN_WIDTH/2 - game_over_text.get_width()/2, SCREEN_HEIGHT/2))
+            pygame.display.flip()
+
+            # Wait for 3 seconds, then quit
+            if pygame.time.get_ticks() - game_over_start_time > 3000:
+                pygame.quit()
+                sys.exit()
+            continue  # Skip the rest of the loop until quitting
+
+        # Rendering
         screen.fill((0, 0, 0))  # Clear screen with black
-        font = pygame.font.Font(None, 74)
-        game_over_text = font.render("Game Over", True, (255, 255, 255))
-        screen.blit(game_over_text, (SCREEN_WIDTH/2 - game_over_text.get_width()/2, SCREEN_HEIGHT/2))
+        all_sprites.draw(screen)
+
+        # Display Score
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+        screen.blit(score_text, (10, 10))
+
+        # Display Lives as Images
+        for i in range(player.lives - 1):  # Subtract 1 to exclude the current life
+            x = 10 + i * (life_image.get_width() + 5)
+            y = SCREEN_HEIGHT - life_image.get_height() - 10
+            screen.blit(life_image, (x, y))
+
+        # If in wave transition, display "Wave N" message
+        if next_wave:
+            wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
+            screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
+
         pygame.display.flip()
 
-        # Wait for 3 seconds, then quit
-        if pygame.time.get_ticks() - game_over_start_time > 3000:
-            pygame.quit()
-            sys.exit()
-        continue  # Skip the rest of the loop until quitting
+        # Check for Win Condition
+        if not enemy_group and not next_wave:
+            wave_number += 1
+            next_wave = True
+            next_wave_start_time = pygame.time.get_ticks()
 
-    # Rendering
-    screen.fill((0, 0, 0))  # Clear screen with black
-    all_sprites.draw(screen)
+        if next_wave:
+            # Update the message to display "Wave N"
+            font = pygame.font.Font(None, 74)
+            wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
+            screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
 
-    # Display Score
-    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    screen.blit(score_text, (10, 10))
-
-    # Display Lives as Images
-    for i in range(player.lives - 1):  # Subtract 1 to exclude the current life
-        x = 10 + i * (life_image.get_width() + 5)
-        y = SCREEN_HEIGHT - life_image.get_height() - 10
-        screen.blit(life_image, (x, y))
-
-    # If in wave transition, display "Wave N" message
-    if next_wave:
-        wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
-        screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
-
-    pygame.display.flip()
-
-    # Check for Win Condition
-    if not enemy_group and not next_wave:
-        wave_number += 1
-        next_wave = True
-        next_wave_start_time = pygame.time.get_ticks()
-
-    if next_wave:
-        # Update the message to display "Wave N"
-        font = pygame.font.Font(None, 74)
-        wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
-        screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
-
-        # Wait for 2 seconds
-        if pygame.time.get_ticks() - next_wave_start_time > 2000:
-            next_wave = False
-            create_enemies()
+            # Wait for 2 seconds
+            if pygame.time.get_ticks() - next_wave_start_time > 2000:
+                next_wave = False
+                create_enemies()
+    else:
+        # Optionally, update explosions even during the wave transition
+        for sprite in all_sprites:
+            if isinstance(sprite, Explosion):
+                sprite.update()
 
 pygame.quit()
 sys.exit()
