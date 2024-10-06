@@ -13,7 +13,7 @@ SCREEN_HEIGHT = 800
 
 # Set up display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Galaga Clone')
+pygame.display.set_caption('Guyaga')
 
 # Create a clock to control frame rate
 clock = pygame.time.Clock()

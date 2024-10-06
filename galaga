@@ -96,7 +96,7 @@ while intro:
 
     # Display the intro message
     font = pygame.font.Font(None, 74)
-    title_text = font.render("Galaga Clone", True, (255, 255, 255))
+    title_text = font.render("Guyaga", True, (255, 255, 255))
     screen.blit(title_text, (SCREEN_WIDTH/2 - title_text.get_width()/2, SCREEN_HEIGHT/2 - 100))
 
     font = pygame.font.Font(None, 36)
