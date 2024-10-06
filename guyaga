@@ -151,7 +151,7 @@ while running:
         for enemy in enemy_group:
             if len(enemy_bullets) >= max_enemy_bullets:
                 break  # Stop trying to shoot if we've reached the max bullets
-            bullet = enemy.shoot()
+            bullet = enemy.shoot(player.rect.centerx, player.rect.centery)
             if bullet:
                 all_sprites.add(bullet)
                 enemy_bullets.add(bullet)
