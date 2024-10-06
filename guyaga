@@ -226,9 +226,9 @@ while running:
     screen.blit(score_text, (10, 10))
 
     # Display Lives as Images
-    for i in range(player.lives):
-        x = 10 + i * (life_image.get_width() + 5)  # Spacing between life icons
-        y = SCREEN_HEIGHT - life_image.get_height() - 10  # Position above the bottom
+    for i in range(player.lives - 1):  # Subtract 1 to exclude the current life
+        x = 10 + i * (life_image.get_width() + 5)
+        y = SCREEN_HEIGHT - life_image.get_height() - 10
         screen.blit(life_image, (x, y))
 
     pygame.display.flip()
