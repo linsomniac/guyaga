@@ -45,6 +45,7 @@ def create_enemies():
 score = 0
 font = pygame.font.Font(None, 36)
 wave_number = 1  # Define wave_number before it's used
+extra_life_threshold = 10000  # The first threshold for awarding an extra life
 
 create_enemies()
 
@@ -160,6 +161,11 @@ while running:
         score += 100
         if explosion_sound:
             explosion_sound.play()
+
+        # Check and award extra lives for all thresholds passed
+        while score >= extra_life_threshold:
+            player.lives += 1  # Award an extra life
+            extra_life_threshold += 10000  # Set the next threshold
 
     def player_died():
         global player_alive, respawn_timer, game_over, game_over_start_time
