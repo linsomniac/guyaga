@@ -11,7 +11,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 PLAYER_START_Y = SCREEN_HEIGHT - 60  # Define the player's starting Y position
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Galaga Clone')
+pygame.display.set_caption('Guyaga')
 clock = pygame.time.Clock()
 
 # Load the life image for displaying lives
@@ -31,8 +31,10 @@ player_group.add(player)
 
 # Function to create a fleet of enemies
 def create_enemies():
-    global enemy_group, all_sprites
-    enemy_speed = 1.6
+    global enemy_group, all_sprites, wave_number
+    base_speed = 1.6  # Initial enemy speed
+    speed_multiplier = 1 + (0.25 * (wave_number - 1))  # Increase speed by 25% each wave
+    enemy_speed = base_speed * speed_multiplier
     for row in range(3):
         for col in range(8):
             enemy = Enemy(80 + col * 60, 50 + row * 60, enemy_speed)
@@ -189,12 +191,16 @@ while running:
         player_died()
 
     # Check if player should respawn
-    if not player_alive and (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000:
-        # Respawn player
-        player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)  # Use the defined PLAYER_START_Y
-        all_sprites.add(player)
-        player_group.add(player)
-        player_alive = True
+    if not player_alive:
+        # Wait until bullets have cleared and respawn delay has passed
+        bullets_cleared = len(player_bullets) == 0 and len(enemy_bullets) == 0
+        respawn_time_passed = (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000
+        if bullets_cleared and respawn_time_passed:
+            # Respawn player
+            player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)
+            all_sprites.add(player)
+            player_group.add(player)
+            player_alive = True
 
     # Check for Game Over state
     if game_over:
@@ -234,18 +240,23 @@ while running:
         next_wave_start_time = pygame.time.get_ticks()
 
     if next_wave:
-        # Display "Next Wave" message
+        # Clear screen
         screen.fill((0, 0, 0))
+
+        # Display "Next Wave" message
         font = pygame.font.Font(None, 74)
         next_wave_text = font.render("Next Wave", True, (255, 255, 255))
         screen.blit(next_wave_text, (SCREEN_WIDTH/2 - next_wave_text.get_width()/2, SCREEN_HEIGHT/2))
+
         pygame.display.flip()
 
         # Wait for 2 seconds
         if pygame.time.get_ticks() - next_wave_start_time > 2000:
             next_wave = False
             create_enemies()
-        continue  # Skip the rest of the loop until the next frame
+        else:
+            # Prevent game elements from updating/drawing
+            continue  # Skip the rest of the loop
 
 pygame.quit()
 sys.exit()
