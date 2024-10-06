@@ -136,14 +136,12 @@ while running:
                     all_sprites.add(bullet)
                     player_bullets.add(bullet)
 
-    # Get pressed keys
-    keys_pressed = pygame.key.get_pressed()
-
-    # Process player input
-    if player_alive:
+    # Process player input only if not in wave transition
+    if not next_wave and player_alive:
+        keys_pressed = pygame.key.get_pressed()
         player.process_input(keys_pressed)
     else:
-        # Stop player's movement when dead
+        # Prevent movement during wave transition
         player.velocity.x = 0
 
     # Enemies shoot bullets only if player is alive and enemy bullets are less than max
@@ -242,6 +240,11 @@ while running:
         y = SCREEN_HEIGHT - life_image.get_height() - 10
         screen.blit(life_image, (x, y))
 
+    # If in wave transition, display "Wave N" message
+    if next_wave:
+        wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
+        screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
+
     pygame.display.flip()
 
     # Check for Win Condition
@@ -251,23 +254,15 @@ while running:
         next_wave_start_time = pygame.time.get_ticks()
 
     if next_wave:
-        # Clear screen
-        screen.fill((0, 0, 0))
-
-        # Display "Next Wave" message
+        # Update the message to display "Wave N"
         font = pygame.font.Font(None, 74)
-        next_wave_text = font.render("Next Wave", True, (255, 255, 255))
-        screen.blit(next_wave_text, (SCREEN_WIDTH/2 - next_wave_text.get_width()/2, SCREEN_HEIGHT/2))
-
-        pygame.display.flip()
+        wave_text = font.render(f"Wave {wave_number}", True, (255, 255, 255))
+        screen.blit(wave_text, (SCREEN_WIDTH/2 - wave_text.get_width()/2, SCREEN_HEIGHT/2))
 
         # Wait for 2 seconds
         if pygame.time.get_ticks() - next_wave_start_time > 2000:
             next_wave = False
             create_enemies()
-        else:
-            # Prevent game elements from updating/drawing
-            continue  # Skip the rest of the loop
 
 pygame.quit()
 sys.exit()
