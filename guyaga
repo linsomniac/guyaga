@@ -41,13 +41,12 @@ def create_enemies():
             all_sprites.add(enemy)
             enemy_group.add(enemy)
 
-create_enemies()
-
 # Game variables
 score = 0
 font = pygame.font.Font(None, 36)
-wave_number = 1  # Ensure this line is present before any function uses wave_number
-wave_number = 1
+wave_number = 1  # Define wave_number before it's used
+
+create_enemies()
 
 # Game over variables
 game_over = False
