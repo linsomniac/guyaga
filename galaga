@@ -12,6 +12,10 @@ SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Galaga Clone')
 clock = pygame.time.Clock()
+
+# Load the life image for displaying lives
+life_image = pygame.image.load('assets/player_ship.png').convert_alpha()
+life_image = pygame.transform.scale(life_image, (25, 20))  # Adjust size as needed
 # Sprite Groups
 all_sprites = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
@@ -176,8 +180,7 @@ while running:
     # Check if player should respawn
     if not player_alive and (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000:
         # Respawn player
-        player.rect.centerx = SCREEN_WIDTH / 2
-        player.rect.bottom = 580
+        player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)  # Adjusted position
         all_sprites.add(player)
         player_group.add(player)
         player_alive = True
@@ -186,11 +189,15 @@ while running:
     screen.fill((0, 0, 0))  # Clear screen with black
     all_sprites.draw(screen)
 
-    # Display Score and Lives
+    # Display Score
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    lives_text = font.render(f"Lives: {player.lives}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
-    screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
+
+    # Display Lives as Images
+    for i in range(player.lives):
+        x = 10 + i * (life_image.get_width() + 5)  # Spacing between life icons
+        y = SCREEN_HEIGHT - life_image.get_height() - 10  # Position above the bottom
+        screen.blit(life_image, (x, y))
 
     pygame.display.flip()
 

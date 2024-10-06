@@ -3,6 +3,7 @@ from bullet import Bullet
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
+PLAYER_START_Y = SCREEN_HEIGHT - 60  # Define at the top
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -10,7 +11,7 @@ class Player(pygame.sprite.Sprite):
         # Load player image
         self.image = pygame.image.load('assets/player_ship.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (50, 40))
-        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 20))
+        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, PLAYER_START_Y))  # Moved up
         self.speed = 5
         self.lives = 3
         self.velocity = pygame.math.Vector2(0, 0)  # For smooth movement
