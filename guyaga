@@ -46,6 +46,7 @@ create_enemies()
 # Game variables
 score = 0
 font = pygame.font.Font(None, 36)
+wave_number = 1  # Ensure this line is present before any function uses wave_number
 wave_number = 1
 
 # Game over variables
