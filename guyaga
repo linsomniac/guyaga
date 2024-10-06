@@ -116,6 +116,9 @@ next_wave_start_time = 0
 
 # Main Game Loop
 while running:
+    # Calculate the maximum number of enemy bullets for the current wave
+    max_enemy_bullets = 20 + (wave_number - 1) * 10
+
     clock.tick(48)  # 48 FPS
 
     # Event Handling
@@ -143,9 +146,11 @@ while running:
         # Stop player's movement when dead
         player.velocity.x = 0
 
-    # Enemies shoot bullets only if player is alive
-    if player_alive:
+    # Enemies shoot bullets only if player is alive and enemy bullets are less than max
+    if player_alive and len(enemy_bullets) < max_enemy_bullets:
         for enemy in enemy_group:
+            if len(enemy_bullets) >= max_enemy_bullets:
+                break  # Stop trying to shoot if we've reached the max bullets
             bullet = enemy.shoot()
             if bullet:
                 all_sprites.add(bullet)
