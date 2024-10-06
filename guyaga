@@ -266,6 +266,7 @@ while running:
             if pygame.time.get_ticks() - next_wave_start_time > 2000:
                 next_wave = False
                 create_enemies()
+                wave_transition_started = False  # Reset the flag for the next wave
     else:
         # Optionally, update explosions even during the wave transition
         for sprite in all_sprites:
