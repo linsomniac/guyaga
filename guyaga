@@ -113,6 +113,7 @@ running = True
 # Game variables
 next_wave = False
 next_wave_start_time = 0
+wave_transition_started = False  # Flag to indicate if the next wave transition has started
 
 # Main Game Loop
 while running:
@@ -249,9 +250,10 @@ while running:
         pygame.display.flip()
 
         # Check for Win Condition
-        if not enemy_group and not next_wave:
+        if not enemy_group and not next_wave and not wave_transition_started:
             wave_number += 1
             next_wave = True
+            wave_transition_started = True  # Set the flag to prevent re-entry
             next_wave_start_time = pygame.time.get_ticks()
 
         if next_wave:
