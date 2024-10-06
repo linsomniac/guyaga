@@ -39,6 +39,7 @@ create_enemies()
 # Game variables
 score = 0
 font = pygame.font.Font(None, 36)
+wave_number = 1
 
 # Initialize respawn variables
 respawn_delay = 3  # seconds
@@ -91,6 +92,9 @@ while intro:
     screen.blit(prompt_text, (SCREEN_WIDTH/2 - prompt_text.get_width()/2, SCREEN_HEIGHT/2))
 
     pygame.display.flip()
+# Initialize the running variable
+running = True
+
 # Game variables
 next_wave = False
 next_wave_start_time = 0

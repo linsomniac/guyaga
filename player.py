@@ -11,15 +11,6 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('assets/player_ship.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (50, 40))
         self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 20))
-        self.speed = 4
-        self.lives = 3
-
-    def __init__(self):
-        super().__init__()
-        # Load player image
-        self.image = pygame.image.load('assets/player_ship.png').convert_alpha()
-        self.image = pygame.transform.scale(self.image, (50, 40))
-        self.rect = self.image.get_rect(midbottom=(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 20))
         self.speed = 5
         self.lives = 3
         self.velocity = pygame.math.Vector2(0, 0)  # For smooth movement
