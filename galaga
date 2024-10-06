@@ -249,3 +249,254 @@ while running:
 
 pygame.quit()
 sys.exit()
+import pygame
+import sys
+import random
+from player import Player
+from enemy import Enemy
+from bullet import Bullet, EnemyBullet
+
+pygame.init()
+
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 800
+PLAYER_START_Y = SCREEN_HEIGHT - 60  # Define the player's starting Y position
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Guyaga Clone')
+clock = pygame.time.Clock()
+
+# Load the life image for displaying lives
+life_image = pygame.image.load('assets/player_ship.png').convert_alpha()
+life_image = pygame.transform.scale(life_image, (25, 20))  # Adjust size as needed
+# Sprite Groups
+all_sprites = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
+player_bullets = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
+
+# Create player
+player = Player()
+all_sprites.add(player)
+player_group.add(player)
+
+# Function to create a fleet of enemies
+def create_enemies():
+    global enemy_group, all_sprites
+    enemy_speed = 1.6
+    for row in range(3):
+        for col in range(8):
+            enemy = Enemy(80 + col * 60, 50 + row * 60, enemy_speed)
+            all_sprites.add(enemy)
+            enemy_group.add(enemy)
+
+create_enemies()
+
+# Game variables
+score = 0
+font = pygame.font.Font(None, 36)
+wave_number = 1
+
+# Game over variables
+game_over = False
+game_over_start_time = 0
+
+# Initialize respawn variables
+respawn_delay = 3  # seconds
+respawn_timer = 0
+player_alive = True
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        # Load explosion image
+        self.image = pygame.image.load('assets/explosion.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (50, 50))  # Adjust size as needed
+        self.rect = self.image.get_rect(center=(x, y))
+        self.start_time = pygame.time.get_ticks()
+        self.duration = 500  # Explosion duration in milliseconds
+
+    def update(self):
+        # Remove explosion after duration
+        if pygame.time.get_ticks() - self.start_time > self.duration:
+            self.kill()
+
+# Load sounds
+try:
+    explosion_sound = pygame.mixer.Sound('assets/explosion.wav')
+except (pygame.error, FileNotFoundError):
+    explosion_sound = None  # Sound file not found, set to None
+
+game_started = False
+
+# Introduction Screen Loop
+intro = True
+while intro:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                intro = False  # Exit the intro loop and start the game
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+
+    screen.fill((0, 0, 0))  # Clear screen with black
+
+    # Display the intro message
+    font = pygame.font.Font(None, 74)
+    title_text = font.render("Guyaga", True, (255, 255, 255))
+    screen.blit(title_text, (SCREEN_WIDTH/2 - title_text.get_width()/2, SCREEN_HEIGHT/2 - 100))
+
+    font = pygame.font.Font(None, 36)
+    prompt_text = font.render("Press SPACE to begin game", True, (255, 255, 255))
+    screen.blit(prompt_text, (SCREEN_WIDTH/2 - prompt_text.get_width()/2, SCREEN_HEIGHT/2))
+
+    pygame.display.flip()
+# Initialize the running variable
+running = True
+
+# Game variables
+next_wave = False
+next_wave_start_time = 0
+
+# Main Game Loop
+while running:
+    clock.tick(48)  # 48 FPS
+
+    # Event Handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # Player shooting
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False  # Exit the game loop
+            elif event.key == pygame.K_SPACE and player_alive:
+                if len(player_bullets) < 2:
+                    bullet = player.shoot()
+                    all_sprites.add(bullet)
+                    player_bullets.add(bullet)
+
+    # Get pressed keys
+    keys_pressed = pygame.key.get_pressed()
+
+    # Process player input
+    if player_alive:
+        player.process_input(keys_pressed)
+    else:
+        # Stop player's movement when dead
+        player.velocity.x = 0
+
+    # Enemies shoot bullets only if player is alive
+    if player_alive:
+        for enemy in enemy_group:
+            bullet = enemy.shoot()
+            if bullet:
+                all_sprites.add(bullet)
+                enemy_bullets.add(bullet)
+
+    # Update all sprites (includes explosions)
+    all_sprites.update()
+
+    # Collision Detection
+    # Player bullets hit enemies
+    hits = pygame.sprite.groupcollide(player_bullets, enemy_group, True, True)
+    for hit in hits:
+        score += 100
+        if explosion_sound:
+            explosion_sound.play()
+
+    def player_died():
+        global player_alive, respawn_timer
+        player.lives -= 1
+
+        # Create explosion at player's position
+        explosion = Explosion(player.rect.centerx, player.rect.centery)
+        all_sprites.add(explosion)
+        if explosion_sound:
+            explosion_sound.play()
+
+        # Remove player sprite
+        all_sprites.remove(player)
+        player_group.remove(player)
+        player_alive = False
+        respawn_timer = pygame.time.get_ticks()
+
+        if player.lives <= 0:
+            # Set game over state
+            game_over = True
+            game_over_start_time = pygame.time.get_ticks()
+
+    # Enemy bullets hit player
+    if player_alive and pygame.sprite.spritecollide(player, enemy_bullets, True):
+        player_died()
+
+    # Enemies collide with player
+    if player_alive and pygame.sprite.spritecollide(player, enemy_group, True):
+        player_died()
+
+    # Check if player should respawn
+    if not player_alive and (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000:
+        # Respawn player
+        player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)  # Use the defined PLAYER_START_Y
+        all_sprites.add(player)
+        player_group.add(player)
+        player_alive = True
+
+    # Check for Game Over state
+    if game_over:
+        # Display 'Game Over' screen
+        screen.fill((0, 0, 0))  # Clear screen with black
+        font = pygame.font.Font(None, 74)
+        game_over_text = font.render("Game Over", True, (255, 255, 255))
+        screen.blit(game_over_text, (SCREEN_WIDTH/2 - game_over_text.get_width()/2, SCREEN_HEIGHT/2))
+        pygame.display.flip()
+
+        # Wait for 3 seconds, then quit
+        if pygame.time.get_ticks() - game_over_start_time > 3000:
+            pygame.quit()
+            sys.exit()
+        continue  # Skip the rest of the loop until quitting
+
+    # Rendering
+    screen.fill((0, 0, 0))  # Clear screen with black
+    all_sprites.draw(screen)
+
+    # Display Score
+    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
+
+    # Display Lives as Images
+    for i in range(player.lives):
+        x = 10 + i * (life_image.get_width() + 5)  # Spacing between life icons
+        y = SCREEN_HEIGHT - life_image.get_height() - 10  # Position above the bottom
+        screen.blit(life_image, (x, y))
+
+    pygame.display.flip()
+
+    # Check for Win Condition
+    if not enemy_group and not next_wave:
+        wave_number += 1
+        next_wave = True
+        next_wave_start_time = pygame.time.get_ticks()
+
+    if next_wave:
+        # Display "Next Wave" message
+        screen.fill((0, 0, 0))
+        font = pygame.font.Font(None, 74)
+        next_wave_text = font.render("Next Wave", True, (255, 255, 255))
+        screen.blit(next_wave_text, (SCREEN_WIDTH/2 - next_wave_text.get_width()/2, SCREEN_HEIGHT/2))
+        pygame.display.flip()
+
+        # Wait for 2 seconds
+        if pygame.time.get_ticks() - next_wave_start_time > 2000:
+            next_wave = False
+            create_enemies()
+        continue  # Skip the rest of the loop until the next frame
+
+pygame.quit()
+sys.exit()
