@@ -162,7 +162,7 @@ while running:
             explosion_sound.play()
 
     def player_died():
-        global player_alive, respawn_timer
+        global player_alive, respawn_timer, game_over, game_over_start_time
         player.lives -= 1
 
         # Create explosion at player's position
