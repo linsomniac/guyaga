@@ -9,6 +9,7 @@ pygame.init()
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
+PLAYER_START_Y = SCREEN_HEIGHT - 60  # Define the player's starting Y position
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Galaga Clone')
 clock = pygame.time.Clock()
@@ -180,7 +181,7 @@ while running:
     # Check if player should respawn
     if not player_alive and (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000:
         # Respawn player
-        player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)  # Adjusted position
+        player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)  # Use the defined PLAYER_START_Y
         all_sprites.add(player)
         player_group.add(player)
         player_alive = True
