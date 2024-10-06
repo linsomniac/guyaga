@@ -46,6 +46,10 @@ score = 0
 font = pygame.font.Font(None, 36)
 wave_number = 1
 
+# Game over variables
+game_over = False
+game_over_start_time = 0
+
 # Initialize respawn variables
 respawn_delay = 3  # seconds
 respawn_timer = 0
@@ -84,6 +88,9 @@ while intro:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 intro = False  # Exit the intro loop and start the game
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
 
     screen.fill((0, 0, 0))  # Clear screen with black
 
@@ -115,10 +122,13 @@ while running:
 
         # Player shooting
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and player_alive:
-                bullet = player.shoot()
-                all_sprites.add(bullet)
-                player_bullets.add(bullet)
+            if event.key == pygame.K_ESCAPE:
+                running = False  # Exit the game loop
+            elif event.key == pygame.K_SPACE and player_alive:
+                if len(player_bullets) < 2:
+                    bullet = player.shoot()
+                    all_sprites.add(bullet)
+                    player_bullets.add(bullet)
 
     # Get pressed keys
     keys_pressed = pygame.key.get_pressed()
@@ -166,9 +176,9 @@ while running:
         respawn_timer = pygame.time.get_ticks()
 
         if player.lives <= 0:
-            print("Game Over")
-            pygame.quit()
-            sys.exit()
+            # Set game over state
+            game_over = True
+            game_over_start_time = pygame.time.get_ticks()
 
     # Enemy bullets hit player
     if player_alive and pygame.sprite.spritecollide(player, enemy_bullets, True):
@@ -185,6 +195,21 @@ while running:
         all_sprites.add(player)
         player_group.add(player)
         player_alive = True
+
+    # Check for Game Over state
+    if game_over:
+        # Display 'Game Over' screen
+        screen.fill((0, 0, 0))  # Clear screen with black
+        font = pygame.font.Font(None, 74)
+        game_over_text = font.render("Game Over", True, (255, 255, 255))
+        screen.blit(game_over_text, (SCREEN_WIDTH/2 - game_over_text.get_width()/2, SCREEN_HEIGHT/2))
+        pygame.display.flip()
+
+        # Wait for 3 seconds, then quit
+        if pygame.time.get_ticks() - game_over_start_time > 3000:
+            pygame.quit()
+            sys.exit()
+        continue  # Skip the rest of the loop until quitting
 
     # Rendering
     screen.fill((0, 0, 0))  # Clear screen with black
