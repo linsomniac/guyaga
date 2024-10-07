@@ -71,9 +71,10 @@ def create_enemies():
 # Game variables
 score = 0
 font = pygame.font.Font(None, 36)
-wave_number = 1  # Define wave_number before it's used
+wave_number = 0  # Start at 0 since it will be incremented to 1 at the start
 extra_life_threshold = 10000  # The first threshold for awarding an extra life
 
+wave_number += 1  # Increment to Wave 1
 create_enemies()
 
 # Game over variables
@@ -138,7 +139,7 @@ while intro:
 running = True
 
 # Game variables
-max_enemy_bullets = 0 if wave_number == 1 else (wave_number - 1) * 4
+max_enemy_bullets = wave_number * 4
 next_wave = False
 next_wave_start_time = 0
 wave_transition_started = False  # Flag to indicate if the next wave transition has started
@@ -319,6 +320,7 @@ while running:
 
     # Check for Win Condition
     if not enemy_group and not wave_transition_started:
+        wave_number += 1  # Increment wave number here
         wave_transition_started = True  # Start wave transition
         next_wave = True
         next_wave_start_time = pygame.time.get_ticks()
