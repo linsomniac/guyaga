@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from bullet import EnemyBullet
 from paths import generate_entrance_path, generate_attack_path
 
@@ -50,9 +51,27 @@ class Enemy(pygame.sprite.Sprite):
 
     def shoot(self, target_x, target_y):
         if self.attacking:
-            if random.randint(1, 100) == 1:
-                bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, target_x, target_y)
-                return bullet
+            # Check if the enemy is higher than 66% of the screen height
+            threshold_y = 0.66 * SCREEN_HEIGHT
+            if self.rect.centery <= threshold_y:
+                # Calculate the vector from the enemy to the player
+                dx = target_x - self.rect.centerx
+                dy = target_y - self.rect.centery
+                
+                # Calculate the angle in degrees between the enemy and the player
+                angle_rad = math.atan2(dy, dx)
+                angle_deg = math.degrees(angle_rad)
+                
+                # Normalize angle to range [0, 360)
+                if angle_deg < 0:
+                    angle_deg += 360
+                
+                # Check if the angle is within the 90-degree cone beneath the enemy (225 to 315 degrees)
+                if 225 <= angle_deg <= 315:
+                    # Proceed to shoot with a certain probability
+                    if random.randint(1, 100) == 1:
+                        bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, target_x, target_y)
+                        return bullet
         return None
 
     def start_attack(self):
