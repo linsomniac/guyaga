@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
