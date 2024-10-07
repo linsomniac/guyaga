@@ -1,6 +1,7 @@
 import pygame
 import random
 from bullet import EnemyBullet
+from paths import generate_entrance_path, generate_attack_path
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
@@ -23,13 +24,14 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         if not self.in_formation:
-            # Move along the entrance path
+            # Move along the entrance or return path
             if self.path and self.path_index < len(self.path):
                 self.rect.center = self.path[self.path_index]
                 self.path_index += 1
             else:
                 # Enemy has reached formation
                 self.in_formation = True
+                self.attacking = False
                 self.rect.center = self.formation_pos
         elif self.attacking:
             # Move along the attack path
@@ -37,29 +39,24 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.center = self.path[self.path_index]
                 self.path_index += 1
             else:
-                # Return to formation after attack
+                # Prepare to return to formation after attack
                 self.attacking = False
-                self.in_formation = True
-                self.rect.center = self.formation_pos
-        elif not self.in_formation:
-            # After attack, move back to formation from top
-            if self.path_index < len(self.path):
-                self.rect.center = self.path[self.path_index]
-                self.path_index += 1
-            else:
-                self.in_formation = True
-                self.rect.center = self.formation_pos
+                self.in_formation = False
+                start_pos = (self.rect.centerx, -100)
+                self.path = generate_entrance_path(
+                    start_pos, self.formation_pos, 'straight_down')
+                self.path_index = 0
+        # Enemies stay stationary when in formation
 
     def shoot(self, target_x, target_y):
         if self.attacking:
-            # Randomly decide to shoot
             if random.randint(1, 100) == 1:
                 bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, target_x, target_y)
                 return bullet
         return None
 
-    def start_attack(self, attack_path):
+    def start_attack(self):
         self.attacking = True
         self.in_formation = False
-        self.path = attack_path
         self.path_index = 0
+        self.path = generate_attack_path(self.rect.center, self.formation_pos)

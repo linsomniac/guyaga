@@ -30,7 +30,7 @@ all_sprites.add(player)
 player_group.add(player)
 
 # Function to create a fleet of enemies
-from paths import generate_entrance_path
+from paths import generate_entrance_path, generate_attack_path
 
 def create_enemies():
     global enemy_group, all_sprites, wave_number
@@ -42,7 +42,7 @@ def create_enemies():
 
     formation_positions = []
     subgroups = 4
-    enemies_per_subgroup = 6  # Adjust as needed
+    enemies_per_subgroup = 6
     total_enemies = subgroups * enemies_per_subgroup
 
     # Define formation positions
@@ -57,8 +57,9 @@ def create_enemies():
     for idx, formation_pos in enumerate(formation_positions):
         subgroup = idx % subgroups
         side = idx % 2  # Alternate sides
-        start_x = 0 if side == 0 else SCREEN_WIDTH
-        start_pos = (start_x, SCREEN_HEIGHT + 100)
+        start_x = -50 if side == 0 else SCREEN_WIDTH + 50
+        start_y = SCREEN_HEIGHT + 100
+        start_pos = (start_x, start_y)
         pattern_type = ['sinusoidal', 's_curve'][subgroup % 2]
         entrance_path = generate_entrance_path(start_pos, formation_pos, pattern_type)
 
@@ -137,6 +138,7 @@ while intro:
 running = True
 
 # Game variables
+max_enemy_bullets = 0 if wave_number == 1 else (wave_number - 1) * 4
 next_wave = False
 next_wave_start_time = 0
 wave_transition_started = False  # Flag to indicate if the next wave transition has started
@@ -207,6 +209,16 @@ while running:
         player.process_input(keys_pressed)
     else:
         player.velocity.x = 0  # Stop movement if player is not alive
+
+    # Enemy attack logic
+    if player_alive:
+        attacking_enemies = [enemy for enemy in enemy_group if enemy.attacking]
+        if len(attacking_enemies) < 5:
+            # Select enemies to attack
+            idle_enemies = [enemy for enemy in enemy_group if enemy.in_formation]
+            if idle_enemies:
+                enemy_to_attack = random.choice(idle_enemies)
+                enemy_to_attack.start_attack()
 
     # Enemies shoot bullets
     if player_alive and len(enemy_bullets) < max_enemy_bullets:
