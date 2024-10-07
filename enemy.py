@@ -8,6 +8,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 class Enemy(pygame.sprite.Sprite):
+    formation_offset = pygame.math.Vector2(0, 0)
     def __init__(self, x, y, speed, path=None, formation_pos=None):
         super().__init__()
         # Load enemy image
@@ -47,7 +48,10 @@ class Enemy(pygame.sprite.Sprite):
                 self.path = generate_entrance_path(
                     start_pos, self.formation_pos, 'straight_down')
                 self.path_index = 0
-        # Enemies stay stationary when in formation
+        elif self.in_formation and not self.attacking:
+            # Apply formation movement
+            self.rect.centerx = self.formation_pos[0] + Enemy.formation_offset.x
+            self.rect.centery = self.formation_pos[1] + Enemy.formation_offset.y
 
     def shoot(self, target_x, target_y):
         if self.attacking:

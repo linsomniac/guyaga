@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import math  # Add this import
 from player import Player
 from enemy import Enemy
 from bullet import Bullet, EnemyBullet
@@ -229,6 +230,15 @@ while running:
                 if bullet:
                     all_sprites.add(bullet)
                     enemy_bullets.add(bullet)
+
+    # Calculate formation movement offset
+    time_now = pygame.time.get_ticks()
+    t = (time_now % 5000) / 5000 * 2 * math.pi  # 5 seconds per cycle
+    A = 20  # Amplitude in the x direction (adjust as needed)
+    B = 20  # Amplitude in the y direction (adjust as needed)
+    x_offset = A * math.sin(t)
+    y_offset = B * math.sin(2 * t)
+    Enemy.formation_offset = pygame.math.Vector2(x_offset, y_offset)
 
     # Update all sprites
     all_sprites.update()
