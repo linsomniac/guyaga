@@ -66,8 +66,8 @@ class Enemy(pygame.sprite.Sprite):
                 if angle_deg < 0:
                     angle_deg += 360
                 
-                # Check if the angle is within the 90-degree cone beneath the enemy (225 to 315 degrees)
-                if 225 <= angle_deg <= 315:
+                # Corrected angle range for shooting downward within a 90-degree cone
+                if 45 <= angle_deg <= 135:
                     # Proceed to shoot with a certain probability
                     if random.randint(1, 100) == 1:
                         bullet = EnemyBullet(self.rect.centerx, self.rect.bottom, target_x, target_y)

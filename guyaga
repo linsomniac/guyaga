@@ -146,7 +146,7 @@ wave_transition_started = False  # Flag to indicate if the next wave transition 
 # Main Game Loop
 while running:
     # Calculate the maximum number of enemy bullets for the current wave
-    max_enemy_bullets = 0 if wave_number == 1 else (wave_number - 1) * 4
+    max_enemy_bullets = (wave_number) * 4
 
     clock.tick(48)  # 48 FPS
 
