@@ -30,16 +30,42 @@ all_sprites.add(player)
 player_group.add(player)
 
 # Function to create a fleet of enemies
+from paths import generate_entrance_path
+
 def create_enemies():
     global enemy_group, all_sprites, wave_number
-    base_speed = 1.6  # Initial enemy speed
-    speed_multiplier = 1 + (0.25 * (wave_number - 1))  # Increase speed by 25% each wave
+
+    enemy_group.empty()  # Clear existing enemies
+    base_speed = 1.6
+    speed_multiplier = 1 + (0.25 * (wave_number - 1))
     enemy_speed = base_speed * speed_multiplier
-    for row in range(3):
-        for col in range(8):
-            enemy = Enemy(80 + col * 60, 50 + row * 60, enemy_speed)
-            all_sprites.add(enemy)
-            enemy_group.add(enemy)
+
+    formation_positions = []
+    subgroups = 4
+    enemies_per_subgroup = 6  # Adjust as needed
+    total_enemies = subgroups * enemies_per_subgroup
+
+    # Define formation positions
+    for i in range(total_enemies):
+        col = i % 8
+        row = i // 8
+        x = 80 + col * 60
+        y = 50 + row * 60
+        formation_positions.append((x, y))
+
+    # Assign enemies to subgroups with entrance patterns
+    for idx, formation_pos in enumerate(formation_positions):
+        subgroup = idx % subgroups
+        side = idx % 2  # Alternate sides
+        start_x = 0 if side == 0 else SCREEN_WIDTH
+        start_pos = (start_x, SCREEN_HEIGHT + 100)
+        pattern_type = ['sinusoidal', 's_curve'][subgroup % 2]
+        entrance_path = generate_entrance_path(start_pos, formation_pos, pattern_type)
+
+        enemy = Enemy(x=start_pos[0], y=start_pos[1], speed=enemy_speed,
+                      path=entrance_path, formation_pos=formation_pos)
+        all_sprites.add(enemy)
+        enemy_group.add(enemy)
 
 # Game variables
 score = 0
@@ -118,7 +144,7 @@ wave_transition_started = False  # Flag to indicate if the next wave transition 
 # Main Game Loop
 while running:
     # Calculate the maximum number of enemy bullets for the current wave
-    max_enemy_bullets = 20 + (wave_number - 1) * 10
+    max_enemy_bullets = 0 if wave_number == 1 else (wave_number - 1) * 4
 
     clock.tick(48)  # 48 FPS
 
@@ -185,12 +211,11 @@ while running:
     # Enemies shoot bullets
     if player_alive and len(enemy_bullets) < max_enemy_bullets:
         for enemy in enemy_group:
-            if len(enemy_bullets) >= max_enemy_bullets:
-                break  # Stop trying to shoot if we've reached the max bullets
-            bullet = enemy.shoot(player.rect.centerx, player.rect.centery)
-            if bullet:
-                all_sprites.add(bullet)
-                enemy_bullets.add(bullet)
+            if enemy.attacking and len(enemy_bullets) < max_enemy_bullets:
+                bullet = enemy.shoot(player.rect.centerx, player.rect.centery)
+                if bullet:
+                    all_sprites.add(bullet)
+                    enemy_bullets.add(bullet)
 
     # Update all sprites
     all_sprites.update()
@@ -239,10 +264,11 @@ while running:
 
     # Check if player should respawn
     if not player_alive:
-        # Wait until bullets have cleared and respawn delay has passed
+        # Wait until bullets have cleared and attacking enemies are back in formation
         bullets_cleared = len(player_bullets) == 0 and len(enemy_bullets) == 0
+        enemies_in_formation = all(enemy.in_formation for enemy in enemy_group)
         respawn_time_passed = (pygame.time.get_ticks() - respawn_timer) > respawn_delay * 1000
-        if bullets_cleared and respawn_time_passed:
+        if bullets_cleared and enemies_in_formation and respawn_time_passed:
             # Respawn player
             player.rect.midbottom = (SCREEN_WIDTH / 2, PLAYER_START_Y)
             all_sprites.add(player)
